@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>유튜브 추출 사이트</title>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="my.css" type="text/css">
+	</head>
+	<body>
+		<header>
+			<br/>
+			<h1>유튜브 추출 사이트</h1>
+		</header>
+		<div class="main">
+				<br/>
+				<br/>
+				<br/>
+				<div style="margin: 0 auto; width:700px;">
+					<input id="data" type="text" placeholder="유튜브 사이트를 입력하세요"/>
+					<button type="submit" onclick="install()">🎶</button>
+				</div>
+		</div>
+		<div class="download">
+			<table id="table">
+				<tr>
+					<th>Number</th>
+					<th>Music</th>
+					<th style="text-align:center">Downloads</th>
+				</tr>
+				<tr id="table_none" style="visibility: hidden;">
+					<td class="number"></td>
+					<td class="music"></td>
+					<td class="download" style="text-align:center"></td>
+				</tr>
+			</table>
+		</div>
+		<footer>
+			<br/>
+			<h2>@ youtube-dl 오픈 소스로 만들었습니다.</h2>
+		</footer>
+		<!-- alert -->
+		<div class="alert" style="visibility : hidden">
+			<h1 style="margin-top: -50px; font-size: 50px;">📩</h1>
+			<h2 style="margin-top:40px;" id="alert_inner"></h2>
+			<input type="submit" value="확인" onclick="alerted('exit');" style="margin-top:10px;font-size:20px;"/>
+		</div>
+		<div class="loader"></div>
+	</body>
+	<script>
+		var data_ = document.getElementById("data");
+		var download = document.getElementsByClassName("download")[0];
+		var install = function(){
+			var data = new FormData();
+			data.append("func", "download");
+			data.append("link", data_.value);
+			var request = new XMLHttpRequest();
+			request.onreadystatechange = function(){
+			if(request.readyState == 4){
+				try {
+					var resp = request.response;
+				} catch (e) {
+					var resp = 'error:Unknown error occurred';
+				}
+				console.log(resp);
+				document.getElementsByClassName("loader")[0].style.visibility = "hidden";
+					if(resp == "none link"){
+						alerted("링크를 입력해주세요!");
+					} else {
+						alerted("다운로드 완료");
+						getlist();
+					}
+				}
+			};
+		request.onloadstart = function(){
+			document.getElementsByClassName("loader")[0].style.visibility="visible";
+		};
+		request.open('POST', 'index.php');
+		request.send(data);
+		}
+		
+		var getlist = function(){
+			var data = new FormData();
+			data.append("func", "getlist");
+			
+			var request = new XMLHttpRequest();
+			request.onreadystatechange = function(){
+				if(request.readyState == 4){
+					try {
+						var resp = JSON.parse(request.response);
+					} catch(e){
+						var resp = {
+							status : 'error',
+							data   : 'Unknown error occurred : [' + request.responseText + ']'
+						};
+					}
+					console.log(resp.status + " : " + resp.data);
+					let count = 0;
+					for(let i=0;i<resp.data.length;i++){
+						if(resp.data[i] == "." || resp.data[i] == "..") continue;
+						console.log("data : " + resp.data[i]);
+						let clone_table = document.getElementById("table_none").cloneNode(true);
+						document.getElementById("table").appendChild(clone_table);
+						clone_table.setAttribute("id", "data" + (count+1));
+						document.getElementsByClassName("number")[i-1].innerHTML = 1+count;
+						document.getElementsByClassName("music")[i-1].innerHTML = resp.data[i];
+						document.getElementsByClassName("download")[i-1].innerHTML = "<a href='./temp/" + resp.data[i] + "' download>Download</a>";
+						clone_table.style.visibility="visible";
+						count++;
+//number
+//music
+//download
+					}
+				document.getElementById("table_none").style.display="none";
+				}
+			};
+			request.open("POST", "index.php");
+			request.send(data);
+		}
+
+		function alerted(msg){
+			if(msg == "exit"){
+				document.getElementsByClassName("alert")[0].style.visibility = "hidden";
+				return;
+			}
+			document.getElementsByClassName("alert")[0].style.visibility = "visible";
+			document.getElementById("alert_inner").innerHTML = msg;
+		}
+	</script>
+</html>
