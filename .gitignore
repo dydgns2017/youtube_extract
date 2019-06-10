@@ -1,2 +1,5 @@
 ## ignore files
 *.mp3
+
+## not ignore files
+!test.mp3
