@@ -19,8 +19,8 @@
 					<button type="submit" onclick="install()">🎶</button>
 				</div>
 		</div>
-		<div class="download">
-			<table id="table">
+		<div class="downloads">
+			 <table id="table">
 				<tr>
 					<th>Number</th>
 					<th>Music</th>
@@ -44,10 +44,10 @@
 			<input type="submit" value="확인" onclick="alerted('exit');" style="margin-top:10px;font-size:20px;"/>
 		</div>
 		<div class="loader"></div>
+		<div class="loader-background"></div>
 	</body>
 	<script>
 		var data_ = document.getElementById("data");
-		var download = document.getElementsByClassName("download")[0];
 		var install = function(){
 			var data = new FormData();
 			data.append("func", "download");
@@ -61,7 +61,8 @@
 					var resp = 'error:Unknown error occurred';
 				}
 				console.log(resp);
-				document.getElementsByClassName("loader")[0].style.visibility = "hidden";
+				document.getElementsByClassName("loader")[0].style.visibility="hidden";
+				document.getElementsByClassName("loader-background")[0].style.display="none";
 					if(resp == "none link"){
 						alerted("링크를 입력해주세요!");
 					} else {
@@ -72,12 +73,21 @@
 			};
 		request.onloadstart = function(){
 			document.getElementsByClassName("loader")[0].style.visibility="visible";
+			document.getElementsByClassName("loader-background")[0].style.display="block";
 		};
 		request.open('POST', 'index.php');
 		request.send(data);
 		}
 		
 		var getlist = function(){
+			if(document.getElementById("table_none").style.display == "none"){
+				document.getElementById("table_none").style.display = "";
+				var trlength = document.getElementsByTagName("tr").length;
+				for(let i=0;i<trlength;i++){
+					if(i == 0 || i == 1) continue;
+					document.getElementsByTagName("tr")[2].remove();
+				}
+			}
 			var data = new FormData();
 			data.append("func", "getlist");
 			
@@ -93,29 +103,28 @@
 						};
 					}
 					console.log(resp.status + " : " + resp.data);
-					let count = 0;
+					let count = 1;
 					for(let i=0;i<resp.data.length;i++){
 						if(resp.data[i] == "." || resp.data[i] == "..") continue;
 						console.log("data : " + resp.data[i]);
 						let clone_table = document.getElementById("table_none").cloneNode(true);
 						document.getElementById("table").appendChild(clone_table);
-						clone_table.setAttribute("id", "data" + (count+1));
-						document.getElementsByClassName("number")[i-1].innerHTML = 1+count;
-						document.getElementsByClassName("music")[i-1].innerHTML = resp.data[i];
-						document.getElementsByClassName("download")[i-1].innerHTML = "<a href='./temp/" + resp.data[i] + "' download>Download</a>";
+						clone_table.setAttribute("id", "data" + (count));
+						document.getElementsByClassName("number")[count].innerHTML = count;
+						document.getElementsByClassName("music")[count].innerHTML = resp.data[i];
+						document.getElementsByClassName("download")[count].innerHTML="<a href='./temp/" + resp.data[i] + "' download>Download</a>";
 						clone_table.style.visibility="visible";
 						count++;
-//number
-//music
-//download
+						//number
+						//music
+						//download
 					}
-				document.getElementById("table_none").style.display="none";
+					document.getElementById("table_none").style.display="none";
 				}
 			};
 			request.open("POST", "index.php");
 			request.send(data);
 		}
-
 		function alerted(msg){
 			if(msg == "exit"){
 				document.getElementsByClassName("alert")[0].style.visibility = "hidden";
@@ -124,5 +133,6 @@
 			document.getElementsByClassName("alert")[0].style.visibility = "visible";
 			document.getElementById("alert_inner").innerHTML = msg;
 		}
+	getlist();
 	</script>
 </html>
